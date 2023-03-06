@@ -70,6 +70,13 @@ function myGameSetUp()
 			hud.isSolved = false
 		end
 	)
+	
+	menu:addOptionsMenuItem("Grid size", {2, 3, 4, 5, 6, 7, 8, 9}, 2,
+		function (selection)
+			print("Not implemented yet")
+			print("Grid size selected", selection)
+		end
+	)
 
 	gfx.sprite.setBackgroundDrawingCallback(
 		function( x, y, width, height )
