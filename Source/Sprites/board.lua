@@ -14,7 +14,28 @@ local gfx <const> = playdate.graphics
 local BOARD_WIDTH = 240
 local BOARD_HEIGHT = 240
 
+local SHUFFLE_COUNT = 200
+
 local SQUARE_GAP = 3
+
+local ADJACENT_SQUARES = {
+	{
+		["x"] = 0, 
+		["y"] = -1,
+	},
+	{
+		["x"] = -1, 
+		["y"] = 0
+	}, 
+	{
+		["x"] = 0, 
+		["y"] = 1
+	},
+	{
+		["x"] = 1, 
+		["y"] = 0
+	}
+}
 
 function Board:init(squaresCountX, squaresCountY)
 	Board.super.init(self)
@@ -28,7 +49,7 @@ function Board:init(squaresCountX, squaresCountY)
 	self.squareHeight = self:getSquarePixelHeight(squaresCountY)
 	
 	self.boardSolution = self:createSolution(self.squaresCountX, self.squaresCountY)
-	local shuffledData = self:shuffleSquares(self.boardSolution)
+	local shuffledData = self:createShuffledData(self.boardSolution)
 	self.boardSquares = self:createBoardSquares(shuffledData)
 	
 	local boardImage = gfx.image.new(BOARD_WIDTH, BOARD_HEIGHT)
@@ -58,7 +79,7 @@ function Board:reset()
 	
 	-- create new board game
 	self.boardSolution = self:createSolution(self.squaresCountX, self.squaresCountY)
-	local shuffledData = self:shuffleSquares(self.boardSolution)
+	local shuffledData = self:createShuffledData(self.boardSolution)
 	self.boardSquares = self:createBoardSquares(shuffledData)
 end
 
@@ -110,12 +131,11 @@ function Board:createBoardSquares(boardData)
 			squares[y][x] = square
 		end
 	end
-	
 	return squares
 end
 
 -- returns a new shuffled table of board data
-function Board:shuffleSquares(boardData)
+function Board:createShuffledData(boardData)
 	local shuffledData = {}
 	for y=1, #boardData
 	do
@@ -125,13 +145,77 @@ function Board:shuffleSquares(boardData)
 			shuffledData[y][x] = boardData[y][x]
 		end
 	end
-	
-	self:shuffle(shuffledData)
-	for y=1, #shuffledData
-	do
-		self:shuffle(shuffledData[y])
-	end
 	return shuffledData
+end
+
+function Board:shuffleBoard()
+	for i=1, SHUFFLE_COUNT
+	do
+		print("Shuffle step", i)
+		-- find the empty square coordinates
+		local emptyCoords = self:findEmptySquareCoords()
+		-- pick a random adjacent square
+		local adjacentSquare = self:getRandomAdjacentSquare(emptyCoords.x, emptyCoords.y)
+		-- move selection
+		self.selection.squareX = adjacentSquare.squareX
+		self.selection.squareY = adjacentSquare.squareY
+		
+		local selectionPos = self:getSelectionPosition(self.selection.squareX, self.selection.squareY)
+		self.selection:moveTo(selectionPos.x, selectionPos.y)
+		-- move square
+		-- I need to make a long queue of moves to animate through
+		self:moveSelectedPiece(false)
+	end
+	self:printSquareData()
+end
+
+function Board:findEmptySquareCoords()
+	for y=1, self.squaresCountY
+	do
+		for x=1, self.squaresCountX
+		do
+			local square = self.boardSquares[y][x]
+			if square.isEmpty
+			then
+				return {
+					["x"] = x,
+					["y"] = y,
+				}
+			end
+		end
+	end
+	print("Error: couldn't find empty square")
+end
+
+function Board:randomAdjancentCoords(x, y)
+	local delta = nil
+	local i = 1
+	while(delta == nil)
+	do
+		print("-- random adjacent iteration", i)
+		local d = ADJACENT_SQUARES[math.random(1, 4)]
+		local newX = x + d.x
+		local newY = y + d.y
+		print("---- newX", newX, "new Y", newY)
+		if self:checkInBounds(newX, newY) == true
+		then
+			print("---- in bounds")
+			delta = d
+		else
+			print("---- not in bounds")
+			i += 1
+		end
+	end
+	
+	return {
+		["x"] = x + delta.x,
+		["y"] = y + delta.y
+	}
+end
+
+function Board:getRandomAdjacentSquare(emptyX, emptyY)
+	local coords = self:randomAdjancentCoords(emptyX, emptyY)
+	return self.boardSquares[coords.y][coords.x]
 end
 
 function Board:shuffle(x)
@@ -170,32 +254,37 @@ function Board:getSelectionPosition()
 	return position
 end
 
+function Board:checkInBounds(x, y)
+	if x > self.squaresCountX
+	then
+		return false
+	end
+	
+	if x < 1
+	then
+		return false
+	end
+	
+	if y > self.squaresCountY
+	then
+		return false
+	end
+	
+	if y < 1
+	then
+		return false
+	end
+	
+	return true
+end
+
 function Board:moveSelection(deltaSquareX, deltaSquareY)
 	local newSquareX = deltaSquareX + self.selection.squareX
 	local newSquareY = deltaSquareY + self.selection.squareY
 	
-	if newSquareX > self.squaresCountX
+	if self:checkInBounds(newSquareX, newSquareY) == false
 	then
 		return
-		-- newSquareX = self.squaresCountX
-	end
-	
-	if newSquareX < 1
-	then
-		return
-		-- newSquareX = 1
-	end
-	
-	if newSquareY > self.squaresCountY
-	then
-		return
-		-- newSquareY = self.squaresCountY
-	end
-	
-	if newSquareY < 1
-	then
-		return
-		-- newSquareY = 1
 	end
 	
 	self.selection.squareX = newSquareX
@@ -209,7 +298,7 @@ function Board:drawSquareImage(data)
 	return gfx.imageWithText(tostring(data), self.squareWidth, self.squareHeight)
 end
 
-function Board:moveSelectedPiece()
+function Board:moveSelectedPiece(animated)
 	print("Moving piece at", self.selection.squareX, self.selection.squareY)
 	-- see if any adjacent piece is empty -1,-1 -> 1,1
 	local emptySquare = self:getAdjacentEmpty(self.selection.squareX, self.selection.squareY)
@@ -227,7 +316,7 @@ function Board:moveSelectedPiece()
 	self.boardSquares[emptySquare.squareY][emptySquare.squareX] = moveSquare
 	-- update data on squares
 	emptySquare:setPosition(movePosition, false)
-	moveSquare:setPosition(emptyPosition, true)
+	moveSquare:setPosition(emptyPosition, animated)
 end
 
 -- Returns true if solved
@@ -276,29 +365,12 @@ function Board:printSquareDataTable()
 	printTable(board)
 end
 	
-
 -- Returns nil if nothing nearby is adjancet
 -- Otherwise returns the coordinates of the nil piece
 function Board:getAdjacentEmpty(squareX, squareY)
 	
-	local checkDelta = {
-		{
-			["x"] = 0, 
-			["y"] = -1,
-		},
-		{
-			["x"] = -1, 
-			["y"] = 0
-		}, 
-		{
-			["x"] = 0, 
-			["y"] = 1
-		},
-		{
-			["x"] = 1, 
-			["y"] = 0
-		}
-	}
+	local checkDelta = ADJACENT_SQUARES
+	
 	-- loop from -1 to 1, skipping 0
 	for key, deltaCoord in pairs(checkDelta)
 	do

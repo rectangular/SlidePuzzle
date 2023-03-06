@@ -25,10 +25,11 @@ local myInputHandlers = {
 
 	AButtonDown = function()
 		-- move the piece; if the game isn't already solved
-		if board:checkIfSolved() == false
+		if hud.isSolved == false
 		then
-			board:moveSelectedPiece()
+			board:moveSelectedPiece(true)
 		end
+		
 		-- then check if it's solved
 		if board:checkIfSolved() == true
 		then
@@ -68,6 +69,12 @@ function myGameSetUp()
 		function ()
 			board:reset()
 			hud.isSolved = false
+		end
+	)
+	
+	menu:addMenuItem("Shuffle board", 
+		function ()
+			board:shuffleBoard()
 		end
 	)
 	
