@@ -48,9 +48,28 @@ function Board:init(squaresCountX, squaresCountY)
 	)
 	
 	local selectionPos = self:getSelectionPosition(self.selection.squareX, self.selection.squareY)
-	
 	self.selection:moveTo(selectionPos.x, selectionPos.y)
 	self.selection:add()
+end
+
+function Board:reset()
+	-- remove old sprites
+	self:removeChildren()
+	
+	-- create new board game
+	self.boardSolution = self:createSolution(self.squaresCountX, self.squaresCountY)
+	local shuffledData = self:shuffleSquares(self.boardSolution)
+	self.boardSquares = self:createBoardSquares(shuffledData)
+end
+
+function Board:removeChildren()
+	for y=1, #self.boardSquares
+	do
+		for x=1, #self.boardSquares[y]
+		do
+			self.boardSquares[y][x]:remove()
+		end
+	end
 end
 
 function Board:createSolution(squaresCountX, squaresCountY)

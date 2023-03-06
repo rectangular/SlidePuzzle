@@ -24,11 +24,15 @@ local hud = Hud(level)
 local myInputHandlers = {
 
 	AButtonDown = function()
+		-- move the piece; if the game isn't already solved
+		if board:checkIfSolved() == false
+		then
+			board:moveSelectedPiece()
+		end
+		-- then check if it's solved
 		if board:checkIfSolved() == true
 		then
 			hud.isSolved = true
-		else
-			board:moveSelectedPiece()
 		end
 	end,
 	
@@ -62,7 +66,8 @@ function myGameSetUp()
 	local menu = playdate.getSystemMenu()
 	menu:addMenuItem("Reset game", 
 		function ()
-			print("TODO: Reset game")
+			board:reset()
+			hud.isSolved = false
 		end
 	)
 
