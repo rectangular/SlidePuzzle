@@ -30,11 +30,9 @@ function Selection:animateTo(x, y)
 end
 
 function Selection:update()
-	if self.animator ~= nil
-	then
+	if self.animator ~= nil then
 		self:setAnimator(self.animator)
-		if self.animator:ended()
-		then
+		if self.animator:ended() then
 			self.animator = nil
 		end
 	end

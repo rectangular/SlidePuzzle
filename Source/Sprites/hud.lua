@@ -41,8 +41,7 @@ function Hud:update()
 	
 	gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
 	gfx.drawText("Level " .. tostring(self.level), PADDING, PADDING)
-	if self.isSolved
-	then
+	if self.isSolved then
 		gfx.drawText("You solved it!", PADDING, PADDING * 3)
 	else
 		gfx.drawText("Not solved yet", PADDING, PADDING * 3)

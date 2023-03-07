@@ -27,14 +27,12 @@ local myInputHandlers = {
 
 	AButtonDown = function()
 		-- move the piece; if the game isn't already solved
-		if hud.isSolved == false
-		then
+		if hud.isSolved == false then
 			board:moveSelectedPiece(true)
 		end
 		
 		-- then check if it's solved
-		if board:checkIfSolved() == true
-		then
+		if board:checkIfSolved() == true then
 			hud.isSolved = true
 		end
 	end,
