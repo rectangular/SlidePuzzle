@@ -62,6 +62,10 @@ function BoardSquare:setPosition(positionData, animated)
 end
 
 function BoardSquare:animateTo(x, y)
+	if x == self.x and y == self.y
+	then
+		return
+	end
 	local ls = playdate.geometry.lineSegment.new(self.x, self.y, x, y)
 	self.animator = gfx.animator.new(200, ls, playdate.easingFunctions.outEase)
 end
