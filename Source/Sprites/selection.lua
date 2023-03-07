@@ -1,9 +1,3 @@
-import "CoreLibs/object"
-import "CoreLibs/graphics"
-import "CoreLibs/sprites"
-import "CoreLibs/animator"
-import "CoreLibs/animation"
-
 class('Selection').extends(playdate.graphics.sprite)
 
 local gfx <const> = playdate.graphics

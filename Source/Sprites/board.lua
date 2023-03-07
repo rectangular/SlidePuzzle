@@ -1,9 +1,3 @@
-import "CoreLibs/object"
-import "CoreLibs/graphics"
-import "CoreLibs/sprites"
-import "CoreLibs/animator"
-import "CoreLibs/animation"
-
 import "board-square.lua"
 import "selection.lua"
 

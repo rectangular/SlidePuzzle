@@ -8,6 +8,8 @@ import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
+import "CoreLibs/animator"
+import "CoreLibs/animation"
 
 import "Sprites/board"
 import "Sprites/hud"
@@ -15,8 +17,8 @@ import "Sprites/hud"
 local gfx <const> = playdate.graphics
 
 local level = 1
-local BOARD_SQUARES_WIDTH = 3
-local BOARD_SQUARES_HEIGHT = 3
+local BOARD_SQUARES_WIDTH = 4
+local BOARD_SQUARES_HEIGHT = 4
 
 local board = Board(BOARD_SQUARES_WIDTH, BOARD_SQUARES_HEIGHT)
 local hud = Hud(level)
