@@ -218,14 +218,6 @@ function Board:getRandomAdjacentSquare(emptyX, emptyY)
 	return self.boardSquares[coords.y][coords.x]
 end
 
-function Board:shuffle(x)
-	for i=#x, 2, -1 
-	do
-		local j = math.random(i)
-		x[i], x[j] = x[j], x[i]
-	end
-end
-
 function Board:getSquarePixelWidth(squaresCountX)
 	local squarePixelWidth = BOARD_WIDTH / squaresCountX
 	squarePixelWidth = squarePixelWidth - 4
